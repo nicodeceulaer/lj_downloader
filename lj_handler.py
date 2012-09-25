@@ -10,13 +10,19 @@ import HTMLParser
 download_links = []
 
 class LinkParser(HTMLParser.HTMLParser):
+	def __init__(self):
+		HTMLParser.HTMLParser.__init__(self)
+		self.verified_links = []
+
+	def verify_link(self, link):
+		is_download_link = link.startswith('http://download.linuxjournal.com/pdf/get-doc.php?code=')
+		if is_download_link:
+			self.verified_links.append(link)
+
 	def handle_starttag(self, tag, attrs):
 		if tag == 'a':
-			 link = attrs[0][1]
-			 print link
-			 is_download_link = link.startswith('http://download.linuxjournal.com/pdf/get-doc.php?code=')
-			 if is_download_link:
-				 download_links.append(link)
+			link = attrs[0][1]
+			self.verify_link(link)
 
 # users account number for linux journal subscription
 # TODO(mk): print usage and exit if AN is missing
