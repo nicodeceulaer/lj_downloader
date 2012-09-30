@@ -60,20 +60,32 @@ def download_issue(issue_info):
 
 
 def generate_name_for_issue(issue_info):
+	""" Generates file name for the issue
+
+	Args:
+		issue_info: given issue tuple
+	"""
 	issue_number, file_format, link = issue_info
 	base = options.base_filename
 	return "%s-%s.%s" % (base, issue_number, file_format)
 
 
 def write_issue(data, filename):
+	""" Writes the given issue data to file
+
+	Args:
+		data: file-like object that represents the issue
+		filename: File name of the issue when written to disk
+	"""
 	with open(filename, 'w') as file:
 		file.write(data.read())
 
 
 def mode_download_all(issue_information):
 	""" Downloads all the avaible Linux Journals
+
 	Args:
-		issue_information:
+		issue_information: information about all the found issues
 	"""
 	for issue in issue_information:
 		file_format = issue[1]
@@ -85,21 +97,28 @@ def mode_download_all(issue_information):
 
 def mode_download_and_email_latest(issue_information):
 	""" Downloads and emails the latest issue 
+
+	Args:
+		issue_information: information about all the found issues
 	"""
 	issue = issue_information[0]
 	file = download_issue(issue)
 	filename = generate_name_for_issue(issue)
 	write_issue(file, filename)
 
+
 def mode_download_issue_number(issue_number, issue_information):
-	print "'%s'" % issue_number
+	""" Downloads a specific issue
+	
+	Args:
+		issue_number: what issue to download
+		issue_information: information about all the found issues
+	"""
 	for issue in issue_information:
 		number_of_this_issue = int(issue[0])
 		file_format = issue[1]
-		print "'%s' '%s'" % (issue[0], issue[1])
 		if number_of_this_issue == int(issue_number) and \
 		   options.file_format == file_format:
-			print "found issue number"
 			file = download_issue(issue)
 			filename = generate_name_for_issue(issue)
 			write_issue(file, filename)
