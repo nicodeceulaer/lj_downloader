@@ -61,7 +61,8 @@ def download_issue(issue_info):
 
 def generate_name_for_issue(issue_info):
 	issue_number, file_format, link = issue_info
-	return "LJ-%s.%s" % (issue_number, file_format)
+	base = options.base_filename
+	return "%s-%s.%s" % (base, issue_number, file_format)
 
 
 def write_issue(data, filename):
