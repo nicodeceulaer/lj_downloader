@@ -28,6 +28,10 @@ import urlparse
 import optparse
 import smtplib
 
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email import Encoders
+
 options = None
 
 class LinkParser(HTMLParser.HTMLParser):
@@ -134,14 +138,44 @@ def mode_download_and_email_latest(issue_information):
         file = download_issue(latest_issue)
         filename = generate_name_for_issue(latest_issue)
         write_issue(file, filename)
+
+        to_address = 'markus.kauppila@gmail.com'
+        send_issue_as_mail_to(latest_issue, filename, to_address)
     else:
         print "No newer issue found"
 
-def send_issue_as_mail_to(filename):
-    msg['Subject'] = 'The contents'
-    msg['From'] = 'root@localhost'
-    msg['To'] = 'root@localhost'
-    # send the email, attach the filename
+def send_issue_as_mail_to(issue, filename, to_address):
+    """ Send the file to the given address.
+
+    needs issue number <- issue tuple
+    needs file type <- issue tuple
+    """
+    issue_number = issue[0]
+    file_format = issue[1]
+
+    message = MIMEMultipart('Heres the latest issue')
+    message['Subject'] = 'Linux Journal - %s' % issue_number
+    message['To'] = to
+
+    # defaults to pdf
+    mime_ending = 'pdf'
+    if file_format == 'mobi':
+        mime_ending = 'x-mobipocket-ebook'
+    elif file_format == 'epub':
+        mime_ending = 'epub+zib'
+
+    part = MIMEBase('application', mime_ending)
+    attachment_file = open(filename, 'rb').read()
+    part.set_payload(attachment_file)
+    Encoders.encode_base64(part)
+    part.add_header('Content-Disposition', 'attachment; filename="%s"' 
+            % os.path.basename(filename))
+    message.attach(part)
+
+    from_address = 'lj@mailer.org'
+    server = smtplib.SMTP('localhost')
+    server.sendmail(from_address, to_address, msg.as_string())
+    server.quit()
 
 def try_to_update_latest_issue_number(issue_number):
     """ Tries ot update the latest issue number 
@@ -164,9 +198,6 @@ def try_to_update_latest_issue_number(issue_number):
 
 
 if __name__ == "__main__":
-    send_issue_as_mail_to(9)
-    sys.exit(1)
-
     parser = optparse.OptionParser()
     parser.add_option('-a', '--account-number', type='string', action='store', dest='account_number')
     parser.add_option('--mail_to', metavar='foo@bar.org', type='string', action='store', 
