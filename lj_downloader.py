@@ -89,6 +89,19 @@ def mode_download_and_email_latest(issue_information):
 	filename = generate_name_for_issue(issue)
 	write_issue(file, filename)
 
+def mode_download_issue_number(issue_number, issue_information):
+	print "'%s'" % issue_number
+	for issue in issue_information:
+		number_of_this_issue = int(issue[0])
+		file_format = issue[1]
+		print "'%s' '%s'" % (issue[0], issue[1])
+		if number_of_this_issue == int(issue_number) and \
+		   options.file_format == file_format:
+			print "found issue number"
+			file = download_issue(issue)
+			filename = generate_name_for_issue(issue)
+			write_issue(file, filename)
+
 
 def try_to_update_latest_issue_number(issue_number):
 	""" Tries ot update the latest issue number 
@@ -164,13 +177,12 @@ if __name__ == "__main__":
 
 		issue_information.append((issue_number, file_format, link))
 
-	mode = 'all'
+	#did_update = try_to_update_latest_issue_number(issue_information[0][0])
 
-	did_update = try_to_update_latest_issue_number(issue_information[0][0])
-
-	if mode == 'all':
+	if options.mode == 'all':
 		mode_download_all(issue_information)
-	elif mode == 'latest':
+	elif options.mode == 'latest':
 		mode_download_and_email_latest(issue_information)
-	elif mode == 'issue_no':
-		pass
+	else:
+		issue_number = options.mode
+		mode_download_issue_number(issue_number, issue_information)
