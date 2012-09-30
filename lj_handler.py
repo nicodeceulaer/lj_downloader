@@ -12,6 +12,7 @@ Usage:
 
 	./lj_handler --an XXXXXX --download_all --mail_to markus.kauppila@gmail.com
 				 --filename "Linux Journal" --format=[pdf,epub,mobi]
+				 --dst-directory 'l'
 
 	- Two modes:	
 		- download all
@@ -45,14 +46,67 @@ class LinkParser(HTMLParser.HTMLParser):
 
 def download_issue(issue_info):
 	""" Download the issue 
+
+	Args:
+		issue_info: Tuple of three containing information
+			about the issue. Tuple is in the form of
+			(issue number, file format, download link)
+	Returns:
+		The downloaded data as file-like object
 	"""
+	link = issue_info[2]
+	return urllib2.urlopen(link)
+
+
+def generate_name_for_issue(issue_info):
 	issue_number, file_format, link = issue_info
-	filename = "LinuxJournal-" + issue_number + ".pdf"
+	return "LJ-%s.%s" % (issue_number, file_format)
+
+
+def write_issue(data, filename):
 	with open(filename, 'w') as file:
-		pdf_data = pdf.read()
-		file.write(pdf_data)
-	return filename
-	
+		file.write(data.read())
+
+
+def mode_download_all(issue_information):
+	""" Downloads all the avaible Linux Journals
+
+	Args:
+		issue_information:
+	"""
+	for issue in issue_information:
+		file = download_issue(issue)
+		filename = generate_name_for_issue(issue)
+		write_issue(file, filename)
+
+
+def mode_download_and_email_latest(issue_information):
+	""" Downloads and emails the latest issue 
+	"""
+	issue = issue_information[0]
+	file = download_issue(issue)
+	filename = generate_name_for_issue(issue)
+	write_issue(file, filename)
+
+
+def try_to_update_latest_issue_number(issue_number):
+	""" Tries ot update the latest issue number 
+	Number is stored in a file.
+	"""
+	did_update = False
+	latest_issue_number = None
+	# remember the test without the file
+	with open('latest') as memory:
+		latest_issue_number = memory.readline()
+		print "latest issue: %s" % latest_issue_number
+
+	if issue_number > latest_issue_number:
+		with open('latest', 'w') as memory:
+			memory.write(issue_number)
+		did_update = True
+
+	return did_update
+
 
 if __name__ == "__main__":
 	# users account number for linux journal subscription
@@ -70,17 +124,8 @@ if __name__ == "__main__":
 	parser = LinkParser()
 	parser.feed(page)
 
-	latest_issue_number = None
-	# remember the test without the file
-	with open('latest') as memory:
-		latest_issue_number = memory.readline()
-		print "latest issue: %s" % latest_issue_number
-
-
 	issue_information = []
-
 	for link in parser.verified_links:
-		# parse issue number
 		parsed_url = urlparse.urlparse(link)
 		query = urlparse.parse_qs(parsed_url.query)
 
@@ -93,30 +138,13 @@ if __name__ == "__main__":
 
 		issue_information.append((issue_number, file_format, link))
 
-		#print "Linux Journal - %s as %s" % (issue_number, file_format)
+	mode = 'all'
 
+	did_update = try_to_update_latest_issue_number(issue_information[0][0])
 
-	if True:
-		if issue_number > latest_issue_number and False:
-			print "downloading magazine"
-
-			# modify the link for direct download
-			link += '&action=spit'
-			pdf = urllib2.urlopen(link)
-			filename = "LinuxJournal-" + issue_number + ".pdf"
-			with open(filename, 'w') as file:
-				pdf_data = pdf.read()
-				file.write(pdf_data)
-
-			# update the latest issue
-			with open('latest', 'w') as memory:
-				memory.write(issue_number)
-		else:
-			pass
-			#print "No new issue available"
-	else:
-		# download all mode, download and safe
-		for issue in issue_information:
-			print issue
-
-
+	if mode == 'all':
+		mode_download_all(issue_information)
+	elif mode == 'latest':
+		mode_download_and_email_latest(issue_information)
+	elif mode == 'issue_no':
+		pass
