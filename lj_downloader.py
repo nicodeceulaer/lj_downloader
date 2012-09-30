@@ -169,7 +169,6 @@ if __name__ == "__main__":
 		exit(1)
 
 	# users account number for linux journal subscription
-	# TODO(mk): print usage and exit if AN is missing
 	account_number = options.account_number
 	if not account_number:
 		print "usage: d-d-"
@@ -201,8 +200,7 @@ if __name__ == "__main__":
 
 		issue_information.append((issue_number, file_format, link))
 
-	#did_update = try_to_update_latest_issue_number(issue_information[0][0])
-
+	# fire off the right execution mode
 	if options.mode == 'all':
 		mode_download_all(issue_information)
 	elif options.mode == 'latest':
@@ -210,3 +208,5 @@ if __name__ == "__main__":
 	else:
 		issue_number = options.mode
 		mode_download_issue_number(issue_number, issue_information)
+
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
