@@ -170,7 +170,10 @@ if __name__ == "__main__":
 
 	# users account number for linux journal subscription
 	# TODO(mk): print usage and exit if AN is missing
-	account_number = options.account_number #os.environ['AN']
+	account_number = options.account_number
+	if not account_number:
+		print "usage: d-d-"
+		sys.exit(1)
 	print "account number %s" % account_number
 
 	download_url = 'https://secure2.linuxjournal.com/pdf/dljdownload.php?ucLJFooter_accountnumber='
