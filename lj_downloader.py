@@ -95,18 +95,6 @@ def mode_download_all(issue_information):
 			write_issue(file, filename)
 
 
-def mode_download_and_email_latest(issue_information):
-	""" Downloads and emails the latest issue 
-
-	Args:
-		issue_information: information about all the found issues
-	"""
-	issue = issue_information[0]
-	file = download_issue(issue)
-	filename = generate_name_for_issue(issue)
-	write_issue(file, filename)
-
-
 def mode_download_issue_number(issue_number, issue_information):
 	""" Downloads a specific issue
 	
@@ -124,19 +112,46 @@ def mode_download_issue_number(issue_number, issue_information):
 			write_issue(file, filename)
 
 
+def mode_download_and_email_latest(issue_information):
+	""" Downloads and emails the latest issue 
+
+	Args:
+		issue_information: information about all the found issues
+	"""
+	issue_number, file_format = '', ''
+	latest_issue = None
+	for issue in issue_information:
+		file_format = issue[1]
+		if file_format == options.file_format:
+			print "found the issue: %s", issue
+			latest_issue = issue
+			break
+
+ 	is_indeed_latest = try_to_update_latest_issue_number(latest_issue[0])
+	if latest_issue and is_indeed_latest:
+		print latest_issue
+		file = download_issue(latest_issue)
+		filename = generate_name_for_issue(latest_issue)
+		write_issue(file, filename)
+	else:
+		print "No newer issue found"
+
+		# send the email, attach the filename
+
 def try_to_update_latest_issue_number(issue_number):
 	""" Tries ot update the latest issue number 
 	Number is stored in a file.
 	"""
 	did_update = False
 	latest_issue_number = None
-	# remember the test without the file
-	with open('latest') as memory:
-		latest_issue_number = memory.readline()
-		print "latest issue: %s" % latest_issue_number
+	# Check if file exists before opening
+	if os.path.exists('latest'):
+		with open('latest') as memory:
+			latest_issue_number = memory.readline()
 
 	if issue_number > latest_issue_number:
 		with open('latest', 'w') as memory:
+			print "%s " % issue_number
 			memory.write(issue_number)
 		did_update = True
 
