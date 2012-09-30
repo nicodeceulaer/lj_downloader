@@ -14,19 +14,20 @@ Usage:
 				 --filename "Linux Journal" --format=[pdf,epub,mobi]
 				 --dst-directory 'l'
 
-	- Two modes:	
-		- download all
-		- mail the latest issue
-
 TODO:
 	- emailing
 	- Add proper support for different file formats
+	- print warnings if issue is not found, try issue 200 for epub
 """
 
 import os
+import sys
 import urllib2 
 import HTMLParser
 import urlparse
+import optparse
+
+options = None
 
 class LinkParser(HTMLParser.HTMLParser):
 	def __init__(self):
@@ -109,6 +110,30 @@ def try_to_update_latest_issue_number(issue_number):
 
 
 if __name__ == "__main__":
+	parser = optparse.OptionParser()
+	parser.add_option('-a', '--account-number', type='string', action='store', dest='account_number')
+	parser.add_option('--mail_to', metavar='foo@bar.org', type='string', action='store', 
+			help='Where to mail the latest issue')
+	parser.add_option('--base-filename', metavar='linux_journal', type='string', action='store', default='LinuxJournal', dest='base_filename',
+			help='Base filename for the downloaded issue, will be appended by issue number and file format')
+	parser.add_option('--format', metavar='FILE_FORMAT', type='string', action='store', dest='file_format',  default='pdf',
+			help='The desired file format pdf, epub or mobi. Defaults to pdf')
+	parser.add_option('--directory', metavar='PATH', type='string', action='store', 
+			help='Download directory. Defaults to  current working directory')
+
+	# group modes
+	modes = optparse.OptionGroup(parser, 'Mode options', 'Choose one of these')
+	modes.add_option('--download-all', action='store_const', const='all', dest='mode', help='help')
+	modes.add_option('--download-issue', metavar='XXX', type='int', action='store', dest='mode',  help='help')
+	modes.add_option('--download-latest', action='store_const', const='latest', dest='mode', help='help')
+	parser.add_option_group(modes)
+
+	global options
+	options, arguments = parser.parse_args()
+	if options.mode == None:
+		print "Requires mode, see ./name --help"
+		exit(1)
+
 	# users account number for linux journal subscription
 	# TODO(mk): print usage and exit if AN is missing
 	account_number = os.environ['AN']
