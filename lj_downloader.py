@@ -71,14 +71,15 @@ def write_issue(data, filename):
 
 def mode_download_all(issue_information):
 	""" Downloads all the avaible Linux Journals
-
 	Args:
 		issue_information:
 	"""
 	for issue in issue_information:
-		file = download_issue(issue)
-		filename = generate_name_for_issue(issue)
-		write_issue(file, filename)
+		file_format = issue[1]
+		if options.file_format == file_format:
+			file = download_issue(issue)
+			filename = generate_name_for_issue(issue)
+			write_issue(file, filename)
 
 
 def mode_download_and_email_latest(issue_information):
