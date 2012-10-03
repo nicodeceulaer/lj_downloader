@@ -184,7 +184,7 @@ def send_issue_as_mail_to(issue, filename, to_address):
 
     from_address = 'lj@mailer.org'
     server = smtplib.SMTP('localhost')
-    server.sendmail(from_address, to_address, msg.as_string())
+    server.sendmail(from_address, to_address, message.as_string())
     server.quit()
 
 
@@ -223,7 +223,7 @@ def try_to_update_latest_issue_number(issue_number):
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option('-a', '--account-number', type='string', action='store', dest='account_number')
-    parser.add_option('--mail_to', metavar='foo@bar.org', type='string', action='store', dest='email_address',
+    parser.add_option('--email', metavar='foo@bar.org', type='string', action='store', dest='email_address',
             help='Where to mail the latest issue')
     parser.add_option('--base-filename', metavar='linux_journal', type='string', action='store', default='LinuxJournal', dest='base_filename',
             help='Base filename for the downloaded issue, will be appended by issue number and file format')
