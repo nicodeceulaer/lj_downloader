@@ -84,7 +84,15 @@ def write_issue(data, filename):
         data: file-like object that represents the issue
         filename: File name of the issue when written to disk
     """
-    with open(filename, 'w') as file:
+    if options.directory:
+        directory = options.directory
+        if directory[-1:] != '/':
+            directory  += '/'
+        path = directory + filename
+    else:
+        path = filename
+
+    with open(path, 'w') as file:
         file.write(data.read())
 
 
@@ -144,8 +152,8 @@ def mode_download_and_email_latest(issue_information):
         filename = generate_name_for_issue(latest_issue)
         write_issue(file, filename)
 
-        to_address = 'markus.kauppila@gmail.com'
         if options.email_address:
+            to_address = options.email_address
             send_issue_as_mail_to(latest_issue, filename, to_address)
     else:
         print "No newer issue found"
@@ -162,7 +170,7 @@ def send_issue_as_mail_to(issue, filename, to_address):
 
     message = MIMEMultipart('Heres the latest issue')
     message['Subject'] = 'Linux Journal - %s' % issue_number
-    message['To'] = to
+    message['To'] = to_address
 
     # defaults to pdf
     mime_ending = 'pdf'
