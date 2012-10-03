@@ -240,14 +240,15 @@ if __name__ == "__main__":
     parser.add_option_group(modes)
 
     options, arguments = parser.parse_args()
+    script_name = sys.argv[0]
     if options.mode == None:
-        print "Requires mode, see ./name --help"
+        print "Requires mode, see %s --help" % script_name
         exit(1)
 
     # users account number for linux journal subscription
     account_number = options.account_number
     if not account_number:
-        print "Account number is missing"
+        print "Account number is missing, see %s --help" % script_name
         sys.exit(1)
     print "account number %s" % account_number
 
