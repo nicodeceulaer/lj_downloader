@@ -15,10 +15,8 @@ Usage:
                  --dst-directory 'l'
 
 TODO:
-    - Handle special editions? /OK
-        - somewhat, assumes that special numbers have string
-            as issue number
-    - Add destination path
+    - handle incorrect account number
+    - put latest to home directory and make it hidden
 """
 
 import os
@@ -161,9 +159,6 @@ def mode_download_and_email_latest(issue_information):
 
 def send_issue_as_mail_to(issue, filename, to_address):
     """ Send the file to the given address.
-
-    needs issue number <- issue tuple
-    needs file type <- issue tuple
     """
     issue_number = issue[0]
     file_format = issue[1]
