@@ -19,7 +19,6 @@ TODO:
         - somewhat, assumes that special numbers have string
             as issue number
     - Add destination path
-    - print warnings if issue is not found, try issue 200 for epub
 """
 
 import os
@@ -110,6 +109,7 @@ def mode_download_issue_number(issue_number, issue_information):
         issue_number: what issue to download
         issue_information: information about all the found issues
     """
+    found_issue = False
     for issue in issue_information:
         number_of_this_issue = issue[0]
         file_format = issue[1]
@@ -118,6 +118,8 @@ def mode_download_issue_number(issue_number, issue_information):
             file = download_issue(issue)
             filename = generate_name_for_issue(issue)
             write_issue(file, filename)
+            found_issue = True
+    return found_issue
 
 
 def mode_download_and_email_latest(issue_information):
@@ -181,6 +183,7 @@ def send_issue_as_mail_to(issue, filename, to_address):
     server = smtplib.SMTP('localhost')
     server.sendmail(from_address, to_address, msg.as_string())
     server.quit()
+
 
 def was_previous_month_special_issue(issue_number):
     """ Checks if the issue was special edition
@@ -278,6 +281,8 @@ if __name__ == "__main__":
         mode_download_and_email_latest(issue_information)
     else:
         issue_number = options.mode
-        mode_download_issue_number(issue_number, issue_information)
+        did_download_issue = mode_download_issue_number(issue_number, issue_information)
+        if did_download_issue == False:
+            print "Couldn't download issue number %s in %s format" % (issue_number, options.file_format)
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
