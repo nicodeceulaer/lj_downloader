@@ -239,7 +239,6 @@ if __name__ == "__main__":
     modes.add_option('--download-latest', action='store_const', const='latest', dest='mode', help='help')
     parser.add_option_group(modes)
 
-    global options
     options, arguments = parser.parse_args()
     if options.mode == None:
         print "Requires mode, see ./name --help"
