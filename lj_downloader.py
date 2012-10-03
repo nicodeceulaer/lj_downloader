@@ -15,7 +15,9 @@ Usage:
                  --dst-directory 'l'
 
 TODO:
-    - emailing
+    - Handle special editions? /OK
+        - somewhat, assumes that special numbers have string
+            as issue number
     - Add destination path
     - print warnings if issue is not found, try issue 200 for epub
 """
@@ -145,6 +147,7 @@ def mode_download_and_email_latest(issue_information):
     else:
         print "No newer issue found"
 
+
 def send_issue_as_mail_to(issue, filename, to_address):
     """ Send the file to the given address.
 
@@ -178,6 +181,14 @@ def send_issue_as_mail_to(issue, filename, to_address):
     server.sendmail(from_address, to_address, msg.as_string())
     server.quit()
 
+def was_previous_month_special_issue(issue_number):
+    """ Checks if the issue was special edition
+    We're assuming that issue numbers for special editions
+    are not actually numbers, but strings
+    """
+    return issue_number.isdigit() == False
+
+
 def try_to_update_latest_issue_number(issue_number):
     """ Tries ot update the latest issue number 
     Number is stored in a file.
@@ -189,7 +200,11 @@ def try_to_update_latest_issue_number(issue_number):
         with open('latest') as memory:
             latest_issue_number = memory.readline()
 
-    if issue_number > latest_issue_number:
+    if issue_number == latest_issue_number:
+        return did_update
+
+    if (issue_number > latest_issue_number or
+       was_previous_month_special_issue(latest_issue_number)) :
         with open('latest', 'w') as memory:
             print "%s " % issue_number
             memory.write(issue_number)
