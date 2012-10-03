@@ -27,6 +27,7 @@ import HTMLParser
 import urlparse
 import optparse
 import smtplib
+import pdb
 
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
@@ -108,9 +109,9 @@ def mode_download_issue_number(issue_number, issue_information):
         issue_information: information about all the found issues
     """
     for issue in issue_information:
-        number_of_this_issue = int(issue[0])
+        number_of_this_issue = issue[0]
         file_format = issue[1]
-        if number_of_this_issue == int(issue_number) and \
+        if number_of_this_issue == str(issue_number) and \
            options.file_format == file_format:
             file = download_issue(issue)
             filename = generate_name_for_issue(issue)
@@ -225,7 +226,7 @@ if __name__ == "__main__":
     # users account number for linux journal subscription
     account_number = options.account_number
     if not account_number:
-        print "usage: d-d-"
+        print "Account number is missing"
         sys.exit(1)
     print "account number %s" % account_number
 
