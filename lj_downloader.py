@@ -143,7 +143,8 @@ def mode_download_and_email_latest(issue_information):
         write_issue(file, filename)
 
         to_address = 'markus.kauppila@gmail.com'
-        send_issue_as_mail_to(latest_issue, filename, to_address)
+        if options.email_address:
+            send_issue_as_mail_to(latest_issue, filename, to_address)
     else:
         print "No newer issue found"
 
@@ -216,7 +217,7 @@ def try_to_update_latest_issue_number(issue_number):
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option('-a', '--account-number', type='string', action='store', dest='account_number')
-    parser.add_option('--mail_to', metavar='foo@bar.org', type='string', action='store', 
+    parser.add_option('--mail_to', metavar='foo@bar.org', type='string', action='store', dest='email_address',
             help='Where to mail the latest issue')
     parser.add_option('--base-filename', metavar='linux_journal', type='string', action='store', default='LinuxJournal', dest='base_filename',
             help='Base filename for the downloaded issue, will be appended by issue number and file format')
