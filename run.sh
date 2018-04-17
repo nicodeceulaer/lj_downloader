@@ -2,6 +2,7 @@
 set -x
 set -e
 ROOT_DIR="$(dirname "$(readlink -f "$0")")"
+echo ROOT_DIR=$ROOT_DIR
 # check mounted directory
 TARGET_DIR=/Volumes/books/linux_journal
 
