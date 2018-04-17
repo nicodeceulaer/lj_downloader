@@ -2,20 +2,20 @@
 """
 Copyright (c) 2012 Markus Kauppila <markus.kauppila@gmail.com>
 
-Permission is hereby granted, free of charge, to any person obtaining 
-a copy of this software and associated documentation files (the 
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
 without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to 
-permit persons to whom the Software is furnished to do so, subject to 
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
 the following conditions:
 
-The above copyright notice and this permission notice shall be 
+The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
@@ -29,7 +29,8 @@ TODO:
 
 import os
 import sys
-import urllib2 
+import urllib2
+import urllib
 import HTMLParser
 import urlparse
 import optparse
@@ -59,7 +60,7 @@ class LinkParser(HTMLParser.HTMLParser):
 
 
 def download_issue(issue_info):
-    """ Download the issue 
+    """ Download the issue
 
     Args:
         issue_info: Tuple of three containing information
@@ -82,12 +83,10 @@ def generate_name_for_issue(issue_info):
     base = options.base_filename
     return "%s-%s.%s" % (base, issue_number, file_format)
 
-
-def write_issue(data, filename):
-    """ Writes the given issue data to file
+def generate_path( filename ):
+    """ Generate a full file path for a file
 
     Args:
-        data: file-like object that represents the issue
         filename: File name of the issue when written to disk
     """
     if options.directory:
@@ -97,6 +96,16 @@ def write_issue(data, filename):
         path = directory + filename
     else:
         path = filename
+    return path
+
+def write_issue(data, filename):
+    """ Writes the given issue data to file
+
+    Args:
+        data: file-like object that represents the issue
+        filename: File name of the issue when written to disk
+    """
+    path = generate_path( filename )
 
     with open(path, 'w') as file:
         file.write(data.read())
@@ -111,14 +120,19 @@ def mode_download_all(issue_information):
     for issue in issue_information:
         file_format = issue[1]
         if options.file_format == file_format:
-            file = download_issue(issue)
             filename = generate_name_for_issue(issue)
-            write_issue(file, filename)
+            path = generate_path( filename )
+            if os.path.isfile(path):
+                print "Skip download of %s" % path
+            else:
+                print "Download %s" % path
+                file = download_issue(issue)
+                write_issue(file, filename)
 
 
 def mode_download_issue_number(issue_number, issue_information):
     """ Downloads a specific issue
-    
+
     Args:
         issue_number: what issue to download
         issue_information: information about all the found issues
@@ -137,7 +151,7 @@ def mode_download_issue_number(issue_number, issue_information):
 
 
 def mode_download_and_email_latest(issue_information):
-    """ Downloads and emails the latest issue 
+    """ Downloads and emails the latest issue
 
     Args:
         issue_information: information about all the found issues
@@ -186,7 +200,7 @@ def send_issue_as_mail_to(issue, filename, to_address):
     attachment_file = open(filename, 'rb').read()
     part.set_payload(attachment_file)
     Encoders.encode_base64(part)
-    part.add_header('Content-Disposition', 'attachment; filename="%s"' 
+    part.add_header('Content-Disposition', 'attachment; filename="%s"'
             % os.path.basename(filename))
     message.attach(part)
 
@@ -205,7 +219,7 @@ def was_previous_month_special_issue(issue_number):
 
 
 def try_to_update_latest_issue_number(issue_number):
-    """ Tries ot update the latest issue number 
+    """ Tries ot update the latest issue number
     Number is stored in a file.
     """
     did_update = False
@@ -237,7 +251,7 @@ if __name__ == "__main__":
             help='Base filename for the downloaded issue, will be appended by issue number and file format')
     parser.add_option('--format', metavar='FILE_FORMAT', type='string', action='store', dest='file_format',  default='pdf',
             help='The desired file format pdf, epub or mobi. Defaults to pdf')
-    parser.add_option('--directory', metavar='PATH', type='string', action='store', 
+    parser.add_option('--directory', metavar='PATH', type='string', action='store',
             help='Download directory. Defaults to  current working directory')
 
     # group modes
@@ -260,12 +274,14 @@ if __name__ == "__main__":
         sys.exit(1)
     print "account number %s" % account_number
 
-    download_url = 'https://secure2.linuxjournal.com/pdf/dljdownload.php?ucLJFooter_accountnumber='
-
     # Retrieve download page
-    full_url = '%s%s' % (download_url, account_number)
-    response = urllib2.urlopen(full_url)
+    download_url = 'https://secure2.linuxjournal.com/pdf/dljdownload.php'
+    data = urllib.urlencode( { 'ucLJFooter_accountnumber' : account_number } )
+    response = urllib2.urlopen(url=download_url, data=data)
     page = response.read()
+
+    print "downloaded %s" % download_url
+    print "result= %s" % page
 
     # parse the download links
     parser = LinkParser()
@@ -283,6 +299,7 @@ if __name__ == "__main__":
         issue_number = codes[1]
         link += '&action=spit'
 
+        print "Found issue %s (%s)" % (issue_number, file_format)
         issue_information.append((issue_number, file_format, link))
 
     # fire off the right execution mode
